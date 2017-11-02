@@ -1,0 +1,26 @@
+######################################
+##### Install EPEL and REMI Repo #####
+##### 		 Author: nduytg	 	     #####
+######################################
+
+## Install EPEL Repo ##
+yum install epel-release
+yum --enablerepo=epel install
+
+## Install REMI repo ##
+yum install http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
+yum --enablerepo=remi-safe install [Package]
+
+## Mangage Multiple Repos (Enable/Disable) ##
+yum install yum-utils
+
+yum-config-manager --enable remi
+yum repolist alll
+yum --enablerepo install <your_package_here>
+
+yum-config-manager --disable remi
+yum repolist alll
+
+OR
+sed -i -e "s/enabled=1/enabled=0/g" /etc/yum.repos.d/remi-safe.repo
+sed -i -e "s/enabled=0/enabled=1/g" /etc/yum.repos.d/remi-safe.repo
