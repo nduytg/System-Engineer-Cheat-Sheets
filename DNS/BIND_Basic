@@ -1,0 +1,59 @@
+#################################################
+###### Install DNS BIND Server on CentOS 6 ######
+###### 			Author: nduytg			   ######
+#################################################
+
+### Install BIND ###
+yum update -y
+yum install bind bind-utils -y
+
+### Config ###
+vi /etc/named.conf
+option {
+...
+	listen-on port 53 { 127.0.0.1; 103.255.236.179; };
+	allow-query { any; };
+...
+}
+
+
+zone "ducduy.name.vn" IN {
+	type master;
+	file "ducduy.name.vn.zone";
+	allow-update { none; };
+};
+
+
+vi /var/named/ducduy.name.vn.zone
+
+$TTL 86400
+@   IN  SOA     ns1.ducduy.name.vn. ducduy.name.vn. (
+        2013042201  ;Serial
+        3600        ;Refresh
+        1800        ;Retry
+        604800      ;Expire
+        86400       ;Minimum TTL
+)
+; Specify one name server
+		IN	NS		ns1.ducduy.name.vn.
+; Nameserver's IP
+ns1		IN	A		103.255.236.179
+
+; Define hostname -> IP pairs which you wish to resolve
+@		IN	A			61.14.235.122
+blog1	IN	CNAME		@
+forum1	IN	CNAME		@
+shop2	IN	CNAME		@
+blog2	IN	CNAME		@
+forum2	IN	CNAME		@
+shop2	IN	CNAME		@
+
+named-checkconf /etc/named.conf 
+named-checkzone ducduy.name.vn.zone /var/named/ducduy.name.vn.zone
+
+service named restart
+chkconfig named on
+
+iptables -A INPUT -p udp -m state --state NEW --dport 53 -j ACCEPT
+iptables -A INPUT -p tcp -m state --state NEW --dport 53 -j ACCEPT
+service iptables restart
