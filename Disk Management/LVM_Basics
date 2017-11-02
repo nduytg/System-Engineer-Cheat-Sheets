@@ -1,0 +1,122 @@
+################################
+##### 	Configure LVM	   #####
+##### 	Author: nduytg	   #####
+################################
+
+### Make Physical Devices as Physical Volumes
+lsblk
+pvcreate /dev/sdb /dev/sdc
+pvs
+
+## Add the Physical Volumes to a Volume Group
+vgcreate DucDuyVolGroup /dev/sdb /dev/sdc
+pvs
+vgs
+
+### Creating Logical Volumes from the Volume Group Pool
+lvcreate -L 5G -n "project1" DucDuyVolGroup
+lvcreate -L 5G -n "project2" DucDuyVolGroup
+lvcreate -L 2G -n "db" DucDuyVolGroup
+vgs -o +lv_size,lv_name
+
+### Format and Mount the Logical Volumes
+## Format
+mkfs.ext4 /dev/DucDuyVolGroup/project1
+mkfs.ext4 /dev/DucDuyVolGroup/project2
+mkfs.ext4 /dev/DucDuyVolGroup/db
+
+## Create mount points
+mkdir -p /mnt/{project1,project2,db}
+
+mount /dev/DucDuyVolGroup/project1 /mnt/project1
+mount /dev/DucDuyVolGroup/project2 /mnt/project2
+mount /dev/DucDuyVolGroup/db /mnt/db
+
+vi /etc/fstab
+...
+/dev/DucDuyVolGroup/project1 /mnt/project1 ext4 defaults,nofail 0 0
+/dev/DucDuyVolGroup/project2 /mnt/project2 ext4 defaults,nofail 0 0
+/dev/DucDuyVolGroup/db /mnt/db ext4 defaults,nofail 0 0
+
+## Extend Logical volumes
+lvscan
+lvresize -L +1G --resizefs DucDuyVolGroup/db
+OR
+lvextend -L +5G /dev/DucDuyVolGroup/project1
+
+## Shrink Logical volumes
+umount /dev/DucDuyVolGroup/project2
+fsck -t ext4 -f /dev/DucDuyVolGroup/project2
+resize2fs -p /dev/DucDuyVolGroup/project2 4G
+lvresize -L 4G DucDuyVolGroup/project2
+fsck -t ext4 -f /dev/DucDuyVolGroup/project2
+mount /dev/DucDuyVolGroup/project2 /mnt/project2
+
+## Remove Logical volumes
+umount /dev/DucDuyVolGroup/project1
+umount /dev/DucDuyVolGroup/project2
+umount /dev/DucDuyVolGroup/db
+
+lvremove DucDuyVolGroup/project1
+lvremove DucDuyVolGroup/project2
+lvremove DucDuyVolGroup/db
+
+## Remove Volume Group
+umount /dev/DucDuyVolGroup/project1 /mnt/project1
+umount /dev/DucDuyVolGroup/project2 /mnt/project2
+umount /dev/DucDuyVolGroup/db /mnt/db
+
+vgremove DucDuyVolGroup
+
+## Move Physical Volumes
+pvmove /dev/sdb
+pvmove /dev/sdc
+
+## Remove Physical Volumes
+#Mova data to other physical volumes before remove
+pvmove /dev/sdb
+pvmove /dev/sdc
+vgreduce DucDuyVolGroup /dev/sdb
+vgreduce DucDuyVolGroup /dev/sdc
+pvremove /dev/sdb
+
+##################################################
+
+############## Create Thin Pools ##############
+## Create Volume Group From 2 Disks ##
+vgcreate DuyThinVolGroup /dev/sdb /dev/sdc
+
+## Create 1 Logical Volume (Thin Pools) From VG ##
+lvcreate -L 18G --thinpool "DuyThinPool" DuyThinVolGroup
+vgs -o +lv_size,lv_name
+lvdisplay
+
+## Create 4 Thin Volumes from Thin Pool ##
+lvcreate -V 6G --thin -n "Thin_User1" DuyThinVolGroup/DuyThinPool
+lvcreate -V 6G --thin -n "Thin_User2" DuyThinVolGroup/DuyThinPool
+lvcreate -V 6G --thin -n "Thin_User3" DuyThinVolGroup/DuyThinPool
+lvcreate -V 6G --thin -n "Thin_User4" DuyThinVolGroup/DuyThinPool
+
+### Format and Mount the Logical Volumes ##
+## Format ##
+mkfs.ext4 /dev/DuyThinVolGroup/Thin_User1
+mkfs.ext4 /dev/DuyThinVolGroup/Thin_User2
+mkfs.ext4 /dev/DuyThinVolGroup/Thin_User3
+mkfs.ext4 /dev/DuyThinVolGroup/Thin_User4
+
+## Create mount points ##
+mkdir -p /mnt/{user1,user2,user3,user4}
+
+mount /dev/DuyThinVolGroup/Thin_User1 /mnt/user1
+mount /dev/DuyThinVolGroup/Thin_User2 /mnt/user2
+mount /dev/DuyThinVolGroup/Thin_User3 /mnt/user3
+mount /dev/DuyThinVolGroup/Thin_User4 /mnt/user4
+
+df -h
+lvdisplay DuyThinVolGroup
+
+## Extend Thin Pool (Logical Volumes) ##
+lvscan
+lvresize -L +1G DuyThinVolGroup/DuyThinPool
+OR
+lvextend -L +1G DuyThinVolGroup/DuyThinPool
