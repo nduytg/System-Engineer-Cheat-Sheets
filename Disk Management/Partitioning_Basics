@@ -1,0 +1,44 @@
+#################################################
+######		 	Disk partitioning		   ######
+###### 			Author: nduytg			   ######
+#################################################
+
+### Install parted ###
+sudo apt-get install parted
+yum install parted
+
+### List Disks ###
+parted -l
+OR
+lsblk
+
+### Choosing Partitioning Standard ###
+parted /dev/sdb mklabel gpt
+OR
+parted /dev/sdb mklabel msdos
+
+### Create the New Partitioning ###
+parted /dev/sdb mkpart primary ext4 0% 100%
+lsblk
+
+### Create filesystem for the new partition ###
+mkfs.ext4 -L datapartition /dev/sdb1
+lsblk --fs
+OR
+lsblk -o NAME,FSTYPE,LABEL,UUID,MOUNTPOINT
+
+### Mount the new filesystem ###
+mkdir -p /mnt/data
+mount /dev/sdb1 /mnt/data
+
+
+### Mouting filesystem automatically at boot ###
+vi /etc/fstab
+[...]
+LABEL=datapartition /mnt/data ext4 defaults 0 2
+
+df -h
+touch /mnt/data/ducduy
+
+### Resize partition ###
+parted /dev/sdb1 resizepart
