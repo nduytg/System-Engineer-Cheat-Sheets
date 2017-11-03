@@ -50,6 +50,11 @@ DenyUsers user3 user4
 # Disable rhost file (access to another server base on "trust")
 IgnoreRhosts yes
 
+# Limit authentication tries
+MaxAuthTries 3
+MaxSessions 5
+
+
 # Allow RSA authentication
 RSAAuthentication yes
 PubkeyAuthentication yes
