@@ -16,7 +16,6 @@ yum install yum-utils
 
 yum-config-manager --enable remi
 yum repolist alll
-yum --enablerepo install <your_package_here>
 
 yum-config-manager --disable remi
 yum repolist alll
