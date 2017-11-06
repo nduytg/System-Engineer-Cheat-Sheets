@@ -1,0 +1,75 @@
+#############################################
+##### 	Configure Max File Descriptor	#####
+##### 			Author: nduytg			#####
+#############################################
+
+### Find Linux Open File Limit ###
+
+### ulimit usage ###
+ulimit -a: list one user's all resources limits
+ulimit -Sn: list one user's all soft resources limits
+ulimit -Hn: list one user's all hard resources limits
+
+### Check process max open file limit ###
+## Get PID ##
+ps aux | grep sshd
+or
+pidof sshd
+
+## Get process's limits ##
+cat /proc/<PID>/limits
+
+## Check currently using FD ##
+ls /proc/<PID>/fd | wc -l
+
+### Set new limits for users ###
+*** Option 1 ***
+## Set temporary values (valid in one session) ##
+# Only user root can set hard limits #
+ulimit -Sn <new_value>
+sudo ulimit -Hn <new_value> 
+
+## Set permanent value ##
+# Edit file /etc/security/limits.conf #
+vi /etc/security/limits.conf
+[…]
+root soft nofile 32000
+root hard nofile 64000
+nduytg soft nofile 4096
+nduytg hard nofile 8192
+
+# Edit file PAM Login 
+vi /etc/pam.d/login
+[…]
+session required pam_limits.so
+
+# Edit file SSHD config
+vi /etc/ssh/sshd_config
+[…]
+UsePAM yes
+
+# Reboot system
+init 6
+ulimit –n
+ulimit –Hn
+ulimit –Sn
+
+*** Option 2 ***
+prlimit --pid <PID> --nofile=<soft_limit>:<hard_limit>
+prlimit --pid 1036 --nofile=32000:64000
+
+### Set new limits for system wide configuration ###
+## Set temporary values (valid in one session) ##
+cat /proc/sys/fs/file-max
+sysctl -w fs.file-max=500000
+cat /proc/sys/fs/file-max
+
+
+## Set permanent value ##
+vi /etc/sysctl.conf
+[…]
+fs.file-max=700000
+
+# Reload variables
+sysctl -p
+cat /proc/sys/fs/file-max
