@@ -3,6 +3,7 @@
 #######           Author: nduytg            #####
 #######        Version 1.1 - Date: 9/11/17  #####
 #################################################
+#	Tested in CentOS7
 
 # Reference
 # https://klaver.it/linux/sysctl.conf
@@ -14,7 +15,7 @@
 sysctl -a
 
 #### Backup sysctl.conf before changing anything ####
-sysctl -a > sysctl_backup.conf
+sysctl -a > /etc/sysctl_backup.conf
 
 #### Edit /etc/sysctl.conf to modify kernel parameters ####
 vi /etc/sysctl.conf
@@ -28,6 +29,9 @@ vi /etc/sysctl.conf
 net.ipv4.tcp_congestion_control = htcp
 net.ipv4.tcp_timestamps = 1
 net.ipv4.tcp_window_scaling = 1
+# Enable TCP SACK, which allow client to resend only lost packets, not all of them #
+# However, in some cases, TCP may consume more resources (CPU, RAM) and decrease network performance #
+net.ipv4.tcp_sack = 1
 
 ## Increase socket buffer ##
 # Increase Read Memory Buffer #
@@ -56,7 +60,7 @@ net.core.dev_weight = 64
 ## Improve connection tracking ##
 # For high-loaded servers #
 net.nf_conntrack_max = 100000
-or
+#or
 net.netfilter.nf_conntrack_max = 100000
 
 # Decrease connection timeout in netfilter table #
@@ -134,9 +138,11 @@ vm.overcommit_ratio = 50
 
 ## Kernel Hardening ##
 # Prevent buffer/stack/heap exploits #
-kernel.exec-shield = 1
+# In CentOS7/RHEL7 exec-shield has been enabled by default and removed from /proc
+# Use this option in CentOS 6 or other distro
+#kernel.exec-shield = 1
 kernel.randomize_va_space = 2
-kernel.pid_max
+# kernel.pid_max = 4194303
 
 ## IPv6 ##
 # Disable IPv6 by default #
@@ -144,3 +150,7 @@ net.ipv6.conf.all.autoconf=0
 net.ipv6.conf.all.accept_ra=0
 net.ipv6.conf.default.autoconf=0
 net.ipv6.conf.default.accept_ra=0
+---------------------------------------
+
+# Reload changes #
+sysctl -p
