@@ -1,15 +1,16 @@
 #################################################
 #######         Tunning Linux Kernel        #####
 #######           Author: nduytg            #####
-#######        Version 1.1 - Date: 9/11/17  #####
+#######        Version 1.2 - Date: 9/11/17  #####
 #################################################
-#	Tested in CentOS7
+
+#######	Tested in CentOS7 #######
 
 # Reference
 # https://klaver.it/linux/sysctl.conf
 # https://wiki.archlinux.org/index.php/Sysctl
 # https://www.kernel.org/doc/Documentation/sysctl/
-
+# https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt
 
 #### Show all parameters of Linux kernel ####
 sysctl -a
