@@ -1,7 +1,7 @@
 #################################################
-#######			Tunning Linux Kernel		#####
-#######				Author: nduytg			#####
-#######		Version 1.1 - Date: 9/11/17		#####
+#######         Tunning Linux Kernel        #####
+#######           Author: nduytg            #####
+#######        Version 1.1 - Date: 9/11/17  #####
 #################################################
 
 # Reference
@@ -53,7 +53,7 @@ net.core.somaxconn = 16384
 net.core.netdev_max_backlog = 16384
 net.core.dev_weight = 64
 
-# Improve connection tracking #
+## Improve connection tracking ##
 # For high-loaded servers #
 net.nf_conntrack_max = 100000
 or
@@ -88,22 +88,24 @@ net.ipv4.conf.default.accept_redirects = 0
 net.ipv4.conf.all.send_redirects = 0
 net.ipv4.conf.default.send_redirects = 0
 
-# Prevent IP spoofing #
+## Prevent IP spoofing ##
+# Enable reverse path filter to verify IPs #
 net.ipv4.conf.all.rp_filter = 1
 net.ipv4.conf.default.rp_filter = 1
 net.ipv4.conf.all.log_martians = 1
 net.ipv4.conf.default.log_martians = 1
 
-# Decrease TCP FIN timeout #
+## Decrease TCP FIN timeout ##
 net.ipv4.tcp_fin_timeout = 7
 
-# Decrease keep alive waiting time #
+## Decrease keep alive waiting time ##
 net.ipv4.tcp_keepalive_time = 300
 net.ipv4.tcp_keepalive_probes = 5
 net.ipv4.tcp_keepalive_intvl = 15
 
-# Configure ICMP #
+## Configure ICMP ##
 net.ipv4.icmp_echo_ignore_all = 0
+# Avoid smurf attack #
 net.ipv4.icmp_echo_ignore_broadcasts = 1
 net.ipv4.icmp_ignore_bogus_error_responses = 1
 
