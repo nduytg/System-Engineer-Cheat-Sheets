@@ -1,0 +1,40 @@
+#################################################
+#######         Configure IPtables          #####
+#######           Author: nduytg			      #####
+#######     Version 1.0 - Date: 10/11/17	  #####
+#################################################
+
+#  CentOS7
+
+# Reference
+# Configure IPtables to block all port except:
+# Inbound TCP 22, TCp 80, TCP 443
+# Outbound: UDP 53, UDP 123
+
+### Start/Stop/Restart IPtables Firewall ###
+systemctl start iptables
+systemctl status iptables
+
+### List the currently configured iptables rules ###
+iptables -L
+
+### Clear all the currently configured rules ###
+iptables -F
+
+###  Allow inbound connections ###
+## Allow port 22, 80, 443 ##
+iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+iptables -A INPUT -p tcp --dport 80 -j ACCEPT
+iptables -A INPUT -p tcp --dport 443 -j ACCEPT
+
+## Except the listed above, other connections will be dropped ##
+iptables -t filter -P INPUT DROP
+
+###  Allow outbound connections ###
+## Allow port 53, 123 ##
+iptables -A OUTPUT -p tcp --sport 53 -j ACCEPT
+iptables -A OUTPUT -p tcp --sport 123 -j ACCEPT
+
+## Except the listed above, other connections will be dropped ##
+iptables -t filter -P OUTPUT DROP
+
