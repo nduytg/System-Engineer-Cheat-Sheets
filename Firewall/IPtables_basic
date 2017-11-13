@@ -1,14 +1,14 @@
 #################################################
 #######			Configure IPtables			#####
 #######				Author: nduytg			#####
-#######		Version 1.0 - Date: 10/11/1		#####
+#######		Version 0.8 - Date: 13/11/17	#####
 #################################################
 
-##  CentOS7
+#  CentOS7
 
 # Reference
 # Configure IPtables to block all port except:
-# Inbound TCP 22, TCp 80, TCP 443
+# Inbound TCP 22, TCP 80, TCP 443
 # Outbound: UDP 53, UDP 123
 
 ### Start/Stop/Restart IPtables Firewall ###
@@ -22,19 +22,49 @@ iptables -L
 iptables -F
 
 ###  Allow inbound connections ###
+
+## Rules are evaluated in order, put busiet rules at the front!! ##
+## Allow traffic from existing connections or new connection related to these connections ##
+iptables -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+
+## Accept all traffic to the looback interface, ##
+## which is necessary for many applications and services ##
+iptables -A INPUT -i lo -j ACCEPT
+
 ## Allow port 22, 80, 443 ##
-iptables -A INPUT -p tcp --dport 22 -j ACCEPT
-iptables -A INPUT -p tcp --dport 80 -j ACCEPT
-iptables -A INPUT -p tcp --dport 443 -j ACCEPT
+iptables -A INPUT -i <input_interface> -d <public_IP> -p tcp --dport 80 -j ACCEPT
+iptables -A INPUT -i <input_interface> -d <public_IP> -p tcp --dport 443 -j ACCEPT
+iptables -A INPUT -i <input_interface> -d <public_IP> -p tcp --dport 22 -j ACCEPT
 
 ## Except the listed above, other connections will be dropped ##
 iptables -t filter -P INPUT DROP
+--------------------------------------
 
 ###  Allow outbound connections ###
-## Allow port 53, 123 ##
+## Allow traffic from loopback interface ##
+iptables -A OUTPUT -i lo -j ACCEPT
+
+## Allow outbound SSH, Web Traffic ##
+iptables -A OUTPUT -o <output_interface> -p tcp --sport 80 -j ACCEPT
+iptables -A OUTPUT -o <output_interface> -p tcp --sport 443 -j ACCEPT
+iptables -A OUTPUT -o <output_interface> -p tcp --sport 22 -j ACCEPT
+
+## Allow DNS (TCP/UDP port 53), NTP (port 123) ##
 iptables -A OUTPUT -p tcp --sport 53 -j ACCEPT
+iptables -A OUTPUT -p udp --sport 53 -j ACCEPT
 iptables -A OUTPUT -p tcp --sport 123 -j ACCEPT
 
 ## Except the listed above, other connections will be dropped ##
 iptables -t filter -P OUTPUT DROP
 
+### Block forwarding traffic ###
+# This configuration is for single host set-up #
+# For NAT/proxy set-up, follow this link XXXXXX.XXX
+iptables -P FORWARD DROP
+
+### Save current chain rules ###
+systemctl iptables status
+iptables-save > ~/ipt.rules
+
+### Reload saved rules (on startup) ###
+iptables-restore < ~/ipt.rules
