@@ -1,10 +1,11 @@
-#############################################
-#######				Configure NTP			        #####
-#######				Author: nduytg			      #####
-#######		Version 1.0 - Date: 14/11/17	#####
-#############################################
+###############################
+#######	Configure NTP   #######
+#######	Author: nduytg  #######
+#######	Version 1.0     #######
+####### Date: 14/11/17  #######
+###############################
 
-# Tested on CentOS7 (not yet)
+# Tested on CentOS7
 
 # Reference
 # https://www.server-world.info/en/note?os=CentOS_7&p=ntp&f=2
