@@ -10,20 +10,34 @@
 # Reference
 # https://www.server-world.info/en/note?os=CentOS_7&p=ntp&f=2
 
-## NTP Server ##
-yum -y install chrony
+## Check Hardware Clock ##
 
-vi /etc/chrony.conf
-[..]
-# Allow local range
-allow 10.0.0.0/24
+## Check Software/System/Local Clock ##
+date
+hwclock
 
-systemctl start chronyd
-systemctl enable chronyd
+### NTP Server ###
+yum –y install ntp
+vi /etc/ntp.conf
+[…]
+restrict 10.0.0.0 mask 255.255.255.0 nomodify notrap
+server vn.pool.ntp.org
 
-chronyc sources
+systemctl start ntpd
+systemctl enable ntpd
 
-## NTP Client ##
+### NTP Client ###
+
+## Option 1: Use NTPd like Server ##
+yum –y install ntp
+vi /etc/ntp.conf
+[…]
+server <server_IP>
+
+systemctl start ntpd
+systemctl enable ntpd
+
+## Option 2: Use ntpdate ##
 yum -y install ntpdate
 
 ntpdate -s <domain name/ip>
