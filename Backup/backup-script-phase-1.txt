@@ -1,0 +1,47 @@
+#!/bin/bash
+####################################
+##  Rotate Backup Script Phase 1  ##
+##  Author: nduytg                ##
+##  Version 1.0 - Date: 22/11/17  ##
+####################################
+
+# Tested on CentOS7 #
+
+# Backup with timestamp #
+# Simply backup with rsync to a remote host #
+usage()
+{
+	echo "Welcome to my backup script^^"
+	echo "Please type in the arguments as follow:"
+	echo "./backup source_path remote_path"
+	echo ""
+}
+
+TODAY="$(date +"%Y-%m-%e_%H-%M-%S")"
+echo $TODAY
+#LAST_DAY_BACKUP="date -d "1 day ago" +"%Y-%m-%d""
+echo "Date backup: " "$TODAY" >> backup_log.log
+
+## Sample Comand ##
+#rsync -av --dry-run --delete -e ssh /home/nduytg/source/ root@192.168.31.131:/root/backup
+
+usage
+
+if [ $# -lt 2 ] ; then
+	echo "ERROR: Not enough arguments" >> backup_log.log
+	echo "Exit now" >> backup_log.log
+	exit
+fi
+
+SOURCE_PATH=$1
+REMOTE_PATH=$2
+
+
+## Rsync from the system into the latest backup ##
+rsync 	-av \
+		--dry-run \
+		--delete \
+		-e ssh "$SOURCE_PATH" "$REMOTE_PATH/$TODAY_daily_backup" \
+	&& echo "Date:" "$TODAY" "backup completed!" >> backup_log.log \
+	|| echo "Date:" "$TODAY" "backup failed!" >> backup_log.log
+echo "Backup completed!"

@@ -1,0 +1,60 @@
+#!/bin/bash
+####################################
+##  Rotate Backup Script Phase 2  ##
+##  Author: nduytg                ##
+##  Version 1.0 - Date: 22/11/17  ##
+####################################
+
+# Tested on CentOS7 #
+
+# Usage: 
+# ./backup-script-phase-2.sh /root/backup root@192.168.171.130:/root/backup-san
+
+# Backup with timestamp #
+# Simply backup with rsync to a remote host #
+usage()
+{
+	echo "Welcome to my backup script^^"
+	echo "Please type in the arguments as follow:"
+	echo "./backup source_path remote_path"
+	echo ""
+}
+
+SOURCE_PATH=$1
+REMOTE_PATH=$2
+TODAY="$(date +"%H-%M-%S")"
+MAX_BACKUPS=7
+
+echo "$TODAY"
+#LAST_DAY_BACKUP="date -d "1 day ago" +"%Y-%m-%d""
+echo "Date backup: " "$TODAY" >> rotating_log.log
+
+## Sample Comand ##
+usage
+
+if [ $# -lt 2 ] ; then
+	echo "ERROR: Not enough arguments" >> rotating_log.log
+	echo "Exit now" >> rotating_log.log
+	exit
+fi
+
+## STEP 1: Compress and Remove The Oldest Backup ##
+NUMBER_OF_BACKUPs="$(ls -1 $SOURCE_PATH | wc -l)"
+echo "NUMBER_OF_BACKUPs: " "$NUMBER_OF_BACKUPs"
+
+# Check if number of backup > maximum backups
+if [ "$NUMBER_OF_BACKUPs" -gt "$MAX_BACKUPS" ];
+then
+	OLDEST_BACKUP="$(ls -1 $SOURCE_PATH | sort -r | head -n1)"
+	echo "OLDEST_BACKUP: " "$OLDEST_BACKUP"
+	tar -cvzf "$SOURCE_PATH/$OLDEST_BACKUP.tar.gz" "$SOURCE_PATH/$OLDEST_BACKUP/" 
+	#rm -rf "${SOURCE_PATH:?}/$OLDEST_BACKUP"
+fi
+
+## Step 2: Rsync to SAN ##
+rsync 	-av \
+		--remove-source-files \
+		-e ssh "$SOURCE_PATH/$OLDEST_BACKUP.tar.gz" "$REMOTE_PATH/" \
+	&& echo "Date:" "$TODAY" "rotating backup completed!" >> rotating_log.log \
+	|| echo "Date:" "$TODAY" "rotating backup failed!" >> rotating_log.log
+echo "Rotating backup completed!"
