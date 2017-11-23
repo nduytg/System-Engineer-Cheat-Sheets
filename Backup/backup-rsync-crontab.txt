@@ -22,3 +22,6 @@ crontab -e
 
 # Backup every 2 minutes #
 */2 * * * * rsync -av --delete -e ssh /home/nduytg/source/ root@192.168.31.131:/root/backup > /dev/null
+
+# Restart Crond #
+service crond restart
