@@ -1,7 +1,7 @@
 ##########################################
 ##  Install LEMP Stack by Yum on CentOS	##
-##  Author: nduytg                		  ##
-##  Version 1.1 - Date: 23/11/17  		  ##
+##  Author: nduytg                		##
+##  Version 1.1 - Date: 23/11/17  		##
 ##########################################
 
 # Tested on CentOS 7 #
