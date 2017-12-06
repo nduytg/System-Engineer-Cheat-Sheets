@@ -1,7 +1,7 @@
 ######################################
-##  Learning Ansible				##
-##  Author: nduytg                	##
-##  Version 0.3 - Date: 4/12/17  	##
+##  Learning Ansible                ##
+##  Author: nduytg                  ##
+##  Version 0.3 - Date: 4/12/17     ##
 ######################################
 
 # Tested on Ubuntu 16.04
