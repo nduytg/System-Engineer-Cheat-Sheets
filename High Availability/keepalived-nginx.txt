@@ -1,8 +1,8 @@
 ######################################
-##  HA_Load Balance					##
-##  keepalived + nginx				##
-##  Author: nduytg					##
-##  Version 0.9 - Date: 12/12/17  	##
+##  HA_Load Balance			
+##  keepalived + nginx				
+##  Author: nduytg				
+##  Version 0.9 - Date: 12/12/17  	
 ######################################
 
 # Tested on CentOS 7
