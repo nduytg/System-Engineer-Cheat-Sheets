@@ -1,7 +1,7 @@
 ######################################
-##  HA_Load Balance                 ##
-##	keepalived + nginx              ##
-##  Author: nduytg                	##
+##  HA_Load Balance					##
+##  keepalived + nginx              ##
+##  Author: nduytg					##
 ##  Version 0.9 - Date: 12/12/17  	##
 ######################################
 
