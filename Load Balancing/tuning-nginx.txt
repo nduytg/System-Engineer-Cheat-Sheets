@@ -1,7 +1,7 @@
 ######################################
-##  Tuning Nginx					##
-##  Author: nduytg                	##
-##  Version 1.06 - Date: 14/12/17  	##
+##  Tuning Nginx		##
+##  Author: nduytg                ##
+##  Version 1.06 - Date: 14/12/17  ##
 ######################################
 
 # Tested on CentOS 7
