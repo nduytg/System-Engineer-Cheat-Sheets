@@ -100,7 +100,7 @@ vrrp_instance VIP2 {
 	# Monitor interface
     interface ens34
     state BACKUP
-	# Master priority (1-254)
+	# Backup priority (1-254)
     priority 100
 	# VRRP sending interval
     advert_int 1
