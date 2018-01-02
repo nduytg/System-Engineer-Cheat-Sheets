@@ -1,7 +1,7 @@
 ##############################################
-##  Docker Guide - Part 1: Install Docker	##
-##  Author: nduytg                			##
-##  Version 1.0 - Date: 2/1/18  			##
+##  Docker Guide - Part 1: Install Docker   ##
+##  Author: nduytg                          ##
+##  Version 1.0 - Date: 2/1/18              ##
 ##############################################
 
 # Tested on CentOS 7
