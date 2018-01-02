@@ -1,7 +1,7 @@
 ##############################################
-##  Docker Guide - Part 1: Install Docker   ##
-##  Author: nduytg                          ##
-##  Version 1.0 - Date: 2/1/18              ##
+##  Docker Guide - Part 1: Install Docker	##
+##  Author: nduytg                			##
+##  Version 1.0 - Date: 2/1/18  			##
 ##############################################
 
 # Tested on CentOS 7
@@ -44,8 +44,7 @@ Docker version 17.12.0-ce, build c97c6d6
 # Run hello-world image on Docker
 docker run hello-world
 
-##### Using Docker #####
-docker --version
+# List local images
 docker images
 
 # Searching images (on default registry)
@@ -59,11 +58,10 @@ docker run [name|image-id]
 docker inspect centos
 docker inspect hello-world
 
-### Running Containers ###
-docker pull docker/whalesay
-
-### List running containers ###
+# List running containers #
 docker ps
+
+# List all containers
 docker ps -a
 
 # run docker interactive, terminal
