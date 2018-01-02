@@ -21,6 +21,7 @@ yum remove docker docker-common docker-selinux docker-engine
 rm -rf /var/lib/docker
 	  
 ##### Set up Docker Repository #####
+# Install prerequisite packages
 yum install -y yum-utils device-mapper-persistent-data lvm2
 
 # Enable "stable" docker
@@ -49,12 +50,14 @@ docker images
 
 # Searching images (on default registry)
 docker search centos
+# Pull specific images
 docker pull centos:centos6
 docker pull centos
 docker images
 
 docker run [name|image-id]
 
+# Inspect local images
 docker inspect centos
 docker inspect hello-world
 
