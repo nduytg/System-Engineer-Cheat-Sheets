@@ -1,5 +1,5 @@
 ##################################
-##  Docker Guide - Network		##
+##  Docker Guide - Network      ##
 ##  Author: nduytg             	##
 ##  Version 1.0 - Date: 9/1/18 	##
 ##################################
