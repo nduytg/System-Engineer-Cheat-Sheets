@@ -82,7 +82,7 @@ networks:
 docker-compose up -d
 docker ps
 docker network ls
-curl 172.17.0.99
+curl 192.168.0.99
 
 
 
