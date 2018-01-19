@@ -11,6 +11,7 @@
 # https://wiki.archlinux.org/index.php/Sysctl
 # https://www.kernel.org/doc/Documentation/sysctl/
 # https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt
+# https://www.speedguide.net/articles/linux-tweaking-121
 # https://vincent.bernat.im/en/blog/2014-tcp-time-wait-state-linux
 
 ## Show all parameters of Linux kernel ##
