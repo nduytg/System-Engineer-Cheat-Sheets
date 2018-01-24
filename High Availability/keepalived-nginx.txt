@@ -9,6 +9,8 @@
 # Reference
 # https://www.nginx.com/resources/admin-guide/nginx-ha-keepalived/
 # http://keepalived.readthedocs.io/en/latest/installing_keepalived.html
+# http://scale-out-blog.blogspot.com/2011/01/virtual-ip-addresses-and-their.html
+# http://www.austintek.com/LVS/LVS-HOWTO/HOWTO/LVS-HOWTO.failover.html
 
 ### Option 1: Install Keepalived by yum ###
 yum update
