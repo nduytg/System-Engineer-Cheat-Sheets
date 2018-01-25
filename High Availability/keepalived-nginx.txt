@@ -62,13 +62,13 @@ vrrp_script chk_nginx {
 
 vrrp_instance VIP1 {
 	# Primary private interface
-	# Monitor interface
-    interface ens34
-    state MASTER
+	# specify the network interface for the instance to run on
+	interface ens34
+    	state MASTER
 	# Master priority (1-254)
-    priority 200
+    	priority 200
 	# VRRP sending interval
-    advert_int 1
+    	advert_int 1
 	
 	virtual_router_id 11
 	# Primary private IP used to communicate between peers
@@ -99,13 +99,13 @@ vrrp_instance VIP1 {
 
 vrrp_instance VIP2 {
 	# Primary private interface
-	# Monitor interface
-    interface ens34
-    state BACKUP
+	# specify the network interface for the instance to run on
+    	interface ens34
+    	state BACKUP
 	# Backup priority (1-254)
-    priority 100
+    	priority 100
 	# VRRP sending interval
-    advert_int 1
+    	advert_int 1
 	
 	virtual_router_id 22
 	# Primary private IP used to communicate between peers
@@ -147,13 +147,13 @@ vrrp_script chk_nginx {
 
 vrrp_instance VIP1 {
 	# Secondary private interface
-	# Monitor interface
-    interface ens34
-    state BACKUP
+	# specify the network interface for the instance to run on
+    	interface ens34
+    	state BACKUP
 	# Master priority (1-254)
-    priority 100
+    	priority 100
 	# VRRP sending interval
-    advert_int 1
+    	advert_int 1
 	
 	virtual_router_id 11
 	# Secondary private IP used to communicate between peers
@@ -184,11 +184,11 @@ vrrp_instance VIP1 {
 
 vrrp_instance VIP2 {
 	# Secondary private interface
-	# Monitor interface
-    interface ens34
-    state MASTER
+	# specify the network interface for the instance to run on
+    	interface ens34
+   	state MASTER
 	# Master priority (1-254)
-    priority 200
+    	priority 200
 	# VRRP sending interval
     advert_int 1
 	
