@@ -15,10 +15,10 @@ yum --enablerepo=remi-safe install [Package]
 yum install yum-utils
 
 yum-config-manager --enable remi
-yum repolist alll
+yum repolist all
 
 yum-config-manager --disable remi
-yum repolist alll
+yum repolist all
 
 OR
 sed -i -e "s/enabled=1/enabled=0/g" /etc/yum.repos.d/remi-safe.repo
