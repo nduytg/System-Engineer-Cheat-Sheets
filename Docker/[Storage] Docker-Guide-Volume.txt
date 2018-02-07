@@ -1,7 +1,7 @@
 ##################################
-##  Docker Guide - Volume		##
+##  Docker Guide - Volume	##
 ##  Author: nduytg             	##
-##  Version 1.0 - Date: 5/1/18 	##
+##  Version 0.9 - Date: 5/1/18 	##
 ##################################
 
 # Tested on CentOS 7
