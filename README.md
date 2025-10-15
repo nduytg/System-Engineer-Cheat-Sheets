@@ -21,10 +21,13 @@ Cheat sheets are organized by topic. Each directory contains one or more
 1. [Install pre-commit](https://pre-commit.com/#install) if you do not already
    have it available.
 2. Install the hooks for this repository:
+
    ```bash
    pre-commit install
    ```
+
 3. Run the hooks before pushing changes:
+
    ```bash
    pre-commit run --all-files
    ```
