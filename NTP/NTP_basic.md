@@ -1,44 +1,45 @@
-# Configure NTP
+# Configure NTP on CentOS 7
 
 - **Author:** nduytg
 - **Version:** 1.0
-- **Date:** 14/11/17
-- **Tested on:** CentOS7
+- **Date:** 2017-11-14
+- **Tested on:** CentOS 7
 
-## Reference
-https://www.server-world.info/en/note?os=CentOS_7&p=ntp&f=2
+Synchronize system time using `ntpd` or `ntpdate`.
 
-### Check Hardware Clock
+## Verify clocks
 
-### Check Software/System/Local Clock
+```bash
 date
 hwclock
+```
 
-#### NTP Server
-yum –y install ntp
-vi /etc/ntp.conf
-[…]
-restrict 10.0.0.0 mask 255.255.255.0 nomodify notrap
-server vn.pool.ntp.org
+## NTP server configuration
 
-systemctl start ntpd
-systemctl enable ntpd
+```bash
+sudo yum -y install ntp
+sudo sed -i 's/^server .*/server vn.pool.ntp.org/' /etc/ntp.conf
+# Allow clients on the local network
+printf '\nrestrict 10.0.0.0 mask 255.255.255.0 nomodify notrap\n' | sudo tee -a /etc/ntp.conf
+sudo systemctl enable --now ntpd
+```
 
-#### NTP Client
+## NTP client options
 
-### Option 1: Use NTPd like Server
-yum –y install ntp
-vi /etc/ntp.conf
-[…]
-server <server_IP>
+### Option 1: Run `ntpd`
 
-systemctl start ntpd
-systemctl enable ntpd
+```bash
+sudo yum -y install ntp
+sudo bash -c 'cat <<CONF >/etc/ntp.conf
+server <server_ip>
+CONF'
+sudo systemctl enable --now ntpd
+```
 
-### Option 2: Use ntpdate
-yum -y install ntpdate
+### Option 2: Periodic sync with `ntpdate`
 
-ntpdate -s <domain name/ip>
-
-systemctl enable ntpdate
-systemctl start ntpdate
+```bash
+sudo yum -y install ntpdate
+sudo ntpdate -s <domain-or-ip>
+sudo systemctl enable --now ntpdate
+```

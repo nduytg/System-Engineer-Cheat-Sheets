@@ -1,85 +1,87 @@
-# Rotate Backup Script 1
+# Rotate Backup Script (Phase 1)
 
-- **Shell:** /bin/bash
 - **Author:** nduytg
 - **Version:** 0.0
-- **Date:** xx/11/17
-- **Tested on:** CentOS7
+- **Date:** 2017-11-xx
+- **Tested on:** CentOS 7
 
-usage()
-{
-	echo "Welcome to my backup script^^"
-	echo "Please type in the arguments as follow:"
-	echo "./backup source_path remote_user remote_ip target_path"
-	echo ""
+This starter script keeps three rolling daily backups by cloning the most recent
+snapshot and synchronizing changes from a source directory. It is intended to be
+run manually while iterating on the rotation logic.
+
+## Usage
+
+```bash
+./backup source_path remote_user remote_ip target_path
+```
+
+The script expects passwordless SSH access to the remote target. Update the
+`SOURCE_PATH`, `REMOTE_USER`, `REMOTE_IP`, and `TARGET_PATH` arguments to match
+your environment.
+
+## Script listing
+
+```bash
+#!/bin/bash
+set -euo pipefail
+
+usage() {
+  cat <<'USAGE'
+Welcome to the rotating backup script.
+Usage: ./backup source_path remote_user remote_ip target_path
+USAGE
 }
 
-TODAY="$(date +"%Y-%m-%d")"
-LAST_DAY_BACKUP="date -d "1 day ago" +"%Y-%m-%d""
-echo "Date backup: " $TODAY >> backup_log.log
-DATE="$(date +"%Y-%m-%d")"
-RSYNC=/usr/bin/rsync
-SSH=/usr/bin/ssh
+TODAY="$(date +%Y-%m-%d)"
+YESTERDAY="$(date -d '1 day ago' +%Y-%m-%d)"
+LOG_FILE="backup_log.log"
 
-### Sample Comand
-rsync -av --dry-run --delete -e ssh /home/nduytg/source/ root@192.168.31.131:/root/backup
-
-usage
-
-if [ $# -lt 4 ] ; then
-	echo "Not enough arguments" >> backup_log.log
-	echo "Exit now" >> backup_log.log
-	exit
+if [[ $# -lt 4 ]]; then
+  usage
+  {
+    echo "Not enough arguments";
+    echo "Exit now";
+  } >>"${LOG_FILE}"
+  exit 1
 fi
-
-echo "Test arguments variables"
-echo "$0"
-echo "$1"
-echo "$2"
-echo "$3"
-echo "$4"
-echo "$#"
 
 SOURCE_PATH=$1
 REMOTE_USER=$2
 REMOTE_IP=$3
 TARGET_PATH=$4
 
-BACKUP_CYCLE=7
-CURRENT_BACKUPS="ls -1 | wc -l"
+mkdir -p "${TARGET_PATH}"
 
-### Check target path if it exists
-if [ ! -d "$TARGET_PATH" ] ; then
-	mkdir "$TARGET_PATH"
+# Rotate the previous snapshots.
+rm -rf "${TARGET_PATH}/daily_backup.3"
+if [[ -d "${TARGET_PATH}/daily_backup.2" ]]; then
+  mv "${TARGET_PATH}/daily_backup.2" "${TARGET_PATH}/daily_backup.3"
+fi
+if [[ -d "${TARGET_PATH}/daily_backup.1" ]]; then
+  mv "${TARGET_PATH}/daily_backup.1" "${TARGET_PATH}/daily_backup.2"
 fi
 
-#### Rotate backups
-### STEP 1: Remove the oldest backup, if it is exists:
-if [ -d "$TARGET_PATH/daily_backup.3" ] ; then
-	rm -rf "$TARGET_PATH/daily_backup.3"
+# Clone the last backup to seed today's run.
+if [[ -d "${TARGET_PATH}/${YESTERDAY}" ]]; then
+  cp -al "${TARGET_PATH}/${YESTERDAY}" "${TARGET_PATH}/${TODAY}" \
+    && echo "Linked ${YESTERDAY} -> ${TODAY}" >>"${LOG_FILE}"
+else
+  mkdir -p "${TARGET_PATH}/${TODAY}"
 fi
 
-### Step 2: Shift the middle snapshots(s) back one by one, if they exists
-if [ -d "$TARGET_PATH/daily_backup.2" ] ; then
-	mv "$TARGET_PATH/daily_backup.2" "$TARGET_PATH/daily_backup.3"
+RSYNC_CMD=(
+  rsync -av --delete -e ssh "${SOURCE_PATH}" \
+    "${REMOTE_USER}@${REMOTE_IP}:${TARGET_PATH}/${TODAY}"
+)
+
+if "${RSYNC_CMD[@]}"; then
+  echo "Date: ${TODAY} backup completed!" >>"${LOG_FILE}"
+else
+  echo "Date: ${TODAY} backup failed!" >>"${LOG_FILE}"
 fi
 
-if [ -d "$TARGET_PATH/daily_backup.1" ] ; then
-	mv "$TARGET_PATH/daily_backup.1" "$TARGET_PATH/daily_backup.2"
-fi
+echo "Backup completed" >>"${LOG_FILE}"
+```
 
-### Incremental Backup
-cp -al $TARGET_PATH/$LAST_DAY_BACKUP $TARGET_PATH/$TODAY \
-	&& echo Linking last backup complete >> backup_log.log \
-	|| echo Failed copy source last backup >> backup_log.log
-
-### Step 4: Rsync from the system into the latest backup
-rsync 	-av \
-		--dry-run \
-		--delete \
-		-e ssh "$SOURCE_PATH" "$REMOTE_USER@$REMOTE_IP:$TARGET_PATH/$TODAY" \
-	&& echo "Date:" $TODAY "backup completed!" >> backup_log.log \
-	|| echo "Date:" $TODAY "backup failed!" >> backup_log.log \
-
-
-echo "Backup completed" >> backup_log.log
+Adjust logging paths and retention counts to satisfy production requirements
+before automating the process with cron.

@@ -1,57 +1,66 @@
-# Rotate Backup Script Phase 1
+# Rotate Backup Script (Phase 1)
 
-- **Shell:** /bin/bash
 - **Author:** nduytg
 - **Version:** 1.0
-- **Date:** 22/11/17
-- **Tested on:** CentOS7
+- **Date:** 2017-11-22
+- **Tested on:** CentOS 7
 
-## Backup with timestamp
-## Simply backup with rsync to a remote host
-usage()
-{
-	echo "Welcome to my backup script^^"
-	echo "Please type in the arguments as follow:"
-	echo "./backup source_path remote_path remote_user remote_ip"
-	echo ""
+Phase 1 introduces timestamped backups. Each run creates a new directory on the
+remote host and synchronizes the local source using `rsync`.
+
+## Usage
+
+```bash
+./backup source_path remote_path remote_user remote_ip
+```
+
+## Script listing
+
+```bash
+#!/bin/bash
+set -euo pipefail
+
+usage() {
+  cat <<'USAGE'
+Usage: ./backup source_path remote_path remote_user remote_ip
+USAGE
 }
 
-TODAY="$(date +"%Y-%m-%e_%H-%M")"
-LAST_DAY="$(date -d  "1 minutes ago" +"%Y-%m-%e_%H-%M")"
-echo $TODAY
-echo $LAST_DAY
+TODAY="$(date +%Y-%m-%d_%H-%M)"
+LAST_MINUTE="$(date -d '1 minute ago' +%Y-%m-%d_%H-%M)"
+LOG_FILE="backup_log.log"
 
-echo "Date backup: " "$TODAY" >> backup_log.log
-
-usage
-
-if [ $# -lt 4 ] ; then
-	echo "ERROR: Not enough arguments" >> backup_log.log
-	echo "Exit now" >> backup_log.log
-	exit
+if [[ $# -lt 4 ]]; then
+  usage
+  {
+    echo "ERROR: Not enough arguments";
+    echo "Exit now";
+  } >>"${LOG_FILE}"
+  exit 1
 fi
-
-root@192.168.31.131:/root/backup
 
 SOURCE_PATH=$1
 REMOTE_PATH=$2
 REMOTE_USER=$3
 REMOTE_IP=$4
 
-### Incremental backup via ssh before using Rsync
-ssh $REMOTE_USER@$REMOTE_IP /bin/bash << EOF
-## LATEST_BACKUP="$(ls -1 $REMOTE_PATH | sort -r | head -n1)"
-cp -al $REMOTE_PATH/$LATEST_BACKUP $REMOTE_PATH/$TODAY
-EOF
-### ----------In progress------------
+RSYNC_CMD=(
+  rsync -av \
+    --rsync-path="mkdir -p ${REMOTE_PATH} && rsync" \
+    --delete \
+    -e ssh "${SOURCE_PATH}" \
+    "${REMOTE_USER}@${REMOTE_IP}:${REMOTE_PATH}/${TODAY}"
+)
 
-### Rsync from the system into the latest backup
-rsync 	-av \
-		--rsync-path="mkdir -p "$REMOTE_PATH" && rsync" \
---link-dest="$REMOTE_PATH/$LAST_DAY" \
-		--dry-run \
-		--delete \
-		-e ssh "$SOURCE_PATH" "$REMOTE_USER@$REMOTE_IP:$REMOTE_PATH/$TODAY" \
-	&& echo "Date:" "$TODAY" "backup completed!" >> backup_log.log \
-	|| echo "Date:" "$TODAY" "backup failed!" >> backup_log.log
+if "${RSYNC_CMD[@]}"; then
+  echo "Date: ${TODAY} backup completed!" >>"${LOG_FILE}"
+else
+  echo "Date: ${TODAY} backup failed!" >>"${LOG_FILE}"
+fi
+
 echo "Backup completed!"
+```
+
+Use `--link-dest` to enable incremental copies once a previous snapshot exists.
+Set `LAST_MINUTE` to the most recent directory name on the remote host before
+adding the flag.

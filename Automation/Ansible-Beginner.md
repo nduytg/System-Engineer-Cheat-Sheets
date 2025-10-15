@@ -2,65 +2,90 @@
 
 - **Author:** nduytg
 - **Version:** 0.3
-- **Date:** 4/12/17
+- **Date:** 2017-04-12
 - **Tested on:** Ubuntu 16.04
 
-## Ansible + LXC on Ubuntu
+This quick-start shows how to install Ansible on Ubuntu and exercise it against
+lightweight LXC containers that simulate a small fleet of hosts.
 
-#### Install Ansible
-### Option 1: Clone from git
-apt-get install git-core
+## Installation options
 
+### Option 1: Clone from Git
+
+```bash
+sudo apt-get install git-core
 cd ~
 git clone https://github.com/ansible/ansible
-
 cd ansible
 git log
 git submodule update --init --recursive
-apt-get install python-jinja2 python-paramiko python-yaml sshpass
+sudo apt-get install python-jinja2 python-paramiko python-yaml sshpass
+```
 
+Activate Ansible's development environment and confirm the binary is available.
+
+```bash
 which ansible
-
 less ./hacking/env-setup
 source ./hacking/env-setup
-
 which ansible
 ansible --version
+```
 
-### Option 2: Install form Yum
-apt-get update
-apt-get install software-properties-common
-apt-add-repository ppa:ansible/ansible
-apt-get update
-apt-get install ansible
+### Option 2: Install from apt
 
-#### Create Target Machine with LXC
-## Simulate multiple server with LXC (Linux Container)
-apt-get update && apt-get install lxc
+```bash
+sudo apt-get update
+sudo apt-get install software-properties-common
+sudo apt-add-repository ppa:ansible/ansible
+sudo apt-get update
+sudo apt-get install ansible
+```
 
+## Prepare target containers with LXC
+
+Install LXC on the control node and create a few Ubuntu containers that mimic a
+small environment.
+
+```bash
+sudo apt-get update
+sudo apt-get install lxc
 lxc-ls --fancy
+```
 
-## 2 Web, 1 DB
-lxc-create -n web1 -t ubuntu
-lxc-create -n web2 -t ubuntu
-lxc-create -n db1 -t ubuntu
+Create two web servers and one database server.
 
-## List all containers
+```bash
+sudo lxc-create -n web1 -t ubuntu
+sudo lxc-create -n web2 -t ubuntu
+sudo lxc-create -n db1 -t ubuntu
+```
+
+List and start the containers as background services.
+
+```bash
 lxc-ls -f
+sudo lxc-start -n web1 -d
+sudo lxc-start -n web2 -d
+sudo lxc-start -n db1 -d
+```
 
-## Start these containers as deamon processes
-lxc-start -n web1 -d
+Log into a container to satisfy Ansible's prerequisites (Python 2.x and SSH).
 
-## Log into web1 container
-lxc-attach -n web1
+```bash
+sudo lxc-attach -n web1
+sudo apt-get install python-minimal
+exit
+```
 
-#### Prepare target machine (LXC Containers)
-- Requirement: Python 2 and OpenSSH
-lxc-attach -n web1
-apt-get install python-minimal
+Repeat for the remaining containers as needed.
 
-#### Ad-hoc commands
-vim inventory
+## Create an inventory
+
+Build a simple inventory that groups the LXC instances into logical roles.
+
+```ini
+# inventory
 [allservers]
 10.0.3.113
 10.0.3.247
@@ -72,22 +97,17 @@ vim inventory
 
 [database]
 10.0.3.113
----
+```
 
-## Ping all servers named in inventory list
+## Run ad-hoc commands
+
+Verify connectivity and perform common administrative actions.
+
+```bash
 ansible allservers -m ping -u ubuntu -i inventory
-
-## Show available memory on all servers
 ansible allservers -a "free -h" -u ubuntu -i inventory
-
-## Check if these hosts have nginx installed on
-ansible allservers -a "apt list installed | grep nginx" -u ubuntu -i inventory
-
-## Update all hosts
+ansible allservers -a "apt list --installed | grep nginx" -u ubuntu -i inventory
 ansible allservers -a "apt-get update" -u root -i inventory
-
-## Install nginx on web1 and web2
 ansible web -a "apt-get install -y nginx" -u root -i inventory
-
-## Restart nginx on web1 and web2
-ansible web -m service -a "name=nginx state=restarted" -i inventory -u root
+ansible web -m service -a "name=nginx state=restarted" -u root -i inventory
+```

@@ -1,21 +1,25 @@
 # System Engineer Cheat Sheets
 
-This repository curates practical, task-oriented guides for junior system engineers. Each cheat sheet is now written in Markdown so it is easier to browse, review and collaborate on changes.
+This repository curates practical, task-oriented guides for junior system
+engineers. All content now lives in Markdown with consistent metadata, headings,
+and fenced code blocks to improve readability and collaboration.
 
 ## Repository layout
 
-Cheat sheets are grouped by topic. Each directory contains one or more `*.md` files.
+Cheat sheets are organized by topic. Each directory contains one or more
+`*.md` files.
 
 - `Automation/` – Ansible primers and automation playbooks.
-- `Backup/` – Rsync- and script-based backup guides.
-- `Docker/` – Multi-part Docker tutorials, including networking and storage notes.
-- `Firewall/`, `High Availability/`, `Load Balancing/`, `NTP/`, `SSH/`, `Tunning kernel/`, `Utils/`, `Web Services/` – Additional platform-specific references.
-
-The legacy `.txt` files have been superseded by Markdown equivalents with consistent headings and metadata.
+- `Backup/` – Rsync- and script-based backup guides, including rotation scripts.
+- `Docker/` – Multi-part Docker tutorials plus networking and storage notes.
+- `Firewall/`, `High Availability/`, `Load Balancing/`, `NTP/`, `SSH/`,
+  `Tunning kernel/`, `Utils/`, `Web Services/` – Platform-specific references
+  for core services.
 
 ## Local development
 
-1. [Install pre-commit](https://pre-commit.com/#install) if you do not already have it available.
+1. [Install pre-commit](https://pre-commit.com/#install) if you do not already
+   have it available.
 2. Install the hooks for this repository:
    ```bash
    pre-commit install
@@ -30,6 +34,9 @@ The legacy `.txt` files have been superseded by Markdown equivalents with consis
 Markdown linting is enforced in two ways:
 
 - A pre-commit hook runs `pymarkdown` to scan all Markdown files locally.
-- A GitHub Actions workflow (`Markdown lint`) executes the same check on every push and pull request.
+- A GitHub Actions workflow (`Markdown lint`) executes the same check on every
+  push and pull request.
 
-Following these checks keeps the cheat sheets consistently formatted and ready for publishing.
+Install the linter with `pip install pymarkdownlnt` or via `pre-commit`'s
+managed environments. Running the checks keeps the cheat sheets consistently
+formatted and ready for publishing.

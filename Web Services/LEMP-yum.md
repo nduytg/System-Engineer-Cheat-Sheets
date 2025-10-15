@@ -1,45 +1,35 @@
-# Install LEMP Stack by Yum on CentOS
+# Install LEMP Stack with yum on CentOS 7
 
 - **Author:** nduytg
 - **Version:** 1.1
-- **Date:** 23/11/17
+- **Date:** 2017-11-23
 - **Tested on:** CentOS 7
 
-yum update
+## Install packages
 
-#### Install LEMP Stack
-## Apache
-yum install nginx
-systemctl start nginx
-systemctl enable nginx
+```bash
+sudo yum update -y
+sudo yum install -y nginx mariadb-server mariadb php php-mysql
+```
 
-## PHP
-yum install php php-mysql
+## Enable services
 
+```bash
+sudo systemctl enable --now nginx
+sudo systemctl enable --now mariadb
+```
 
-## MySQL (MariaDB)
-yum install mariadb-server mariadb
-mysql_secure_installation
-systemctl start mariadb
-systemctl enable mariadb
+Secure MariaDB:
 
-#### Configure Auto-start service after rebooting or crashing
-systemctl is-enabled nginx
-systemctl status nginx
-systemctl enable nginx
-systemctl is-enabled nginx
+```bash
+sudo mysql_secure_installation
+```
 
-vi /etc/systemd/system/multi-user.target.wants/nginx.service
-[Service]
-...
-...
-Restart=always
-...
+To automatically restart NGINX after crashes, add `Restart=always` to the
+`[Service]` section of `/etc/systemd/system/multi-user.target.wants/nginx.service`
+and reload systemd:
 
-systemctl status nginx
-=> Get PID
-### Reload daemon
-systemctl daemon-reload
-kill -9 PID
-systemctl status nginx
-=> Reboot after being killed
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart nginx
+```

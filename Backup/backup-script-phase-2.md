@@ -1,78 +1,78 @@
-# Rotate Backup Script Phase 2
+# Rotate Backup Script (Phase 2)
 
-- **Shell:** /bin/bash
 - **Author:** nduytg
 - **Version:** 1.3
-- **Date:** 23/11/17
-- **Tested on:** CentOS7
+- **Date:** 2017-11-23
+- **Tested on:** CentOS 7
 
-- Usage:
+Phase 2 enforces retention. When the number of local backups exceeds the
+configured threshold, the script archives and ships the oldest snapshot to a
+remote destination before pruning it locally.
+
+## Usage
+
+```bash
 ./backup-script-phase-2.sh /root/backup root@192.168.171.130:/root/backup-san
+```
 
-## Backup with timestamp
-## Simply backup with rsync to a remote host
-usage()
-{
-	echo "Welcome to my backup script^^"
-	echo "Please type in the arguments as follow:"
-	echo "./backup source_path remote_path"
-	echo ""
+## Script listing
+
+```bash
+#!/bin/bash
+set -euo pipefail
+
+usage() {
+  cat <<'USAGE'
+Usage: ./backup source_path remote_path
+USAGE
 }
+
+if [[ $# -lt 2 ]]; then
+  usage
+  exit 1
+fi
 
 SOURCE_PATH=$1
 REMOTE_PATH=$2
-TODAY="Time: $(date +"%Y-%m-%e_%H-%M")"
-declare -i MAX_BACKUPS=7
+MAX_BACKUPS=${MAX_BACKUPS:-7}
+LOG_FILE="rotating_log.log"
 
-echo "$TODAY"
-LAST_DAY_BACKUP="date -d "1 day ago" +"%Y-%m-%d""
-echo "=======+++Processing+++=======" >> rotating_log.log
-echo "Timestamp: " "$TODAY" >> rotating_log.log
+NUMBER_OF_BACKUPS=$(find "${SOURCE_PATH}" -mindepth 1 -maxdepth 1 -type d | wc -l)
 
-### Sample Comand
-usage
+echo "======= Processing =======" >>"${LOG_FILE}"
+echo "Timestamp: $(date +%Y-%m-%d_%H-%M)" >>"${LOG_FILE}"
+echo "Existing backups: ${NUMBER_OF_BACKUPS}" >>"${LOG_FILE}"
+echo "Max backups: ${MAX_BACKUPS}" >>"${LOG_FILE}"
 
-if [ $# -lt 2 ] ; then
-	echo "ERROR: Not enough arguments" >> rotating_log.log
-	echo "Exit now" >> rotating_log.log
-	exit
+if (( NUMBER_OF_BACKUPS <= MAX_BACKUPS )); then
+  echo "No rotation required" >>"${LOG_FILE}"
+  exit 0
 fi
 
-### STEP 0: Count number of backups
-NUMBER_OF_BACKUPs=$(ls -1 $SOURCE_PATH 2>/dev/null | wc -l)
-echo "NUMBER_OF_BACKUPs:" "$NUMBER_OF_BACKUPs" >> rotating_log.log
-echo "MAX_BACKUPS:" "$MAX_BACKUPS" >> rotating_log.log
+while (( NUMBER_OF_BACKUPS > MAX_BACKUPS )); do
+  OLDEST_BACKUP=$(ls -1 "${SOURCE_PATH}" | sort | head -n1)
+  [[ -z "${OLDEST_BACKUP}" ]] && break
 
-### STEP 1: Check if need to rotating backup
-if [ $NUMBER_OF_BACKUPs -le $MAX_BACKUPS ];
-then
-	echo "No need to rotating backup" >> rotating_log.log
-	exit 0
-else
-	echo "Proceed to rotating backup" >> rotating_log.log
-fi
+  ARCHIVE="${SOURCE_PATH}/${OLDEST_BACKUP}.tar.gz"
+  tar -cvzf "${ARCHIVE}" -C "${SOURCE_PATH}" "${OLDEST_BACKUP}" >>"${LOG_FILE}"
+  rm -rf "${SOURCE_PATH}/${OLDEST_BACKUP}"
 
-## Check if number of backup > maximum backups
-while [ $NUMBER_OF_BACKUPs -gt $MAX_BACKUPS ]
-do
-	echo "Archive old backups" >> rotating_log.log
-	OLDEST_BACKUP="$(ls -1 $SOURCE_PATH | sort | head -n1)"
-	echo "OLDEST_BACKUP: " "$OLDEST_BACKUP" >> rotating_log.log
-	tar -cvzf "$SOURCE_PATH/$OLDEST_BACKUP.tar.gz" "$SOURCE_PATH/$OLDEST_BACKUP/"
-	## Avoid delete the main backup folder
-	if [ -n "$OLDEST_BACKUP" ]; then
-		rm -rf "${SOURCE_PATH:?}/$OLDEST_BACKUP"
-	fi
+  RSYNC_CMD=(
+    rsync -av --remove-source-files -e ssh "${ARCHIVE}" "${REMOTE_PATH}/"
+  )
 
-	### Step 2: Rsync to SAN
-	rsync 	-av \
-		--dry-run \
-		--remove-source-files \
-		-e ssh "$SOURCE_PATH/$OLDEST_BACKUP.tar.gz" "$REMOTE_PATH/" \
-	&& echo "Timestamp: $(date +"%Y-%m-%e_%H-%M")" "archive" "$SOURCE_PATH/$OLDEST_BACKUP.tar.gz" "backup completed!" >> rotating_log.log \
-	|| echo "Timestamp: $(date +"%Y-%m-%e_%H-%M")" "archive" "$SOURCE_PATH/$OLDEST_BACKUP.tar.gz" "backup failed!" >> rotating_log.log
-	let "NUMBER_OF_BACKUPs--"
-	echo "Number of backups: " "$NUMBER_OF_BACKUPs" >> rotating_log.log
+  if "${RSYNC_CMD[@]}"; then
+    echo "Archive ${ARCHIVE} transferred" >>"${LOG_FILE}"
+  else
+    echo "Archive ${ARCHIVE} transfer failed" >>"${LOG_FILE}"
+  fi
+
+  NUMBER_OF_BACKUPS=$((NUMBER_OF_BACKUPS - 1))
+  echo "Backups remaining: ${NUMBER_OF_BACKUPS}" >>"${LOG_FILE}"
 done
 
-echo "Rotating backup completed!" >> rotating_log.log
+echo "Rotation complete" >>"${LOG_FILE}"
+```
+
+Remove `--dry-run` when ready for production and point `REMOTE_PATH` to durable
+storage (for example, a SAN or object store gateway).

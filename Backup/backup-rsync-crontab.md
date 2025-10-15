@@ -1,25 +1,47 @@
-# Backup Script with Crontab
+# Rsync Backup Managed by Cron
 
 - **Author:** nduytg
 - **Version:** 0.5
-- **Date:** 21/11/17
-- **Tested on:** CentOS7
+- **Date:** 2017-11-21
+- **Tested on:** CentOS 7
 
-#### Local Backup
-yum install rsync
-rsync –av --dry-run --delete /home/nduytg/source/ /home/nduytg/backup/
+Automate incremental backups with `rsync` and `cron`. Start with a local copy,
+expand to a remote target over SSH, and finish by restarting the cron service to
+apply schedule changes.
 
-#### External Backup (via SSH)
-yum install ssh rsync
-rsync -av --dry-run --delete -e ssh /home/nduytg/source/ root@192.168.31.131:/root/backup
+## Local dry run
 
-#### Set up Private Key => Auto Login
+```bash
+sudo yum install rsync
+rsync -av --dry-run --delete /home/nduytg/source/ /home/nduytg/backup/
+```
 
-#### Schedule backup jobs with crontab
-crontab -e
+## Remote dry run over SSH
 
-## Backup every 2 minutes
-*/2 * * * * rsync -av --delete -e ssh /home/nduytg/source/ root@192.168.31.131:/root/backup > /dev/null
+```bash
+sudo yum install openssh-clients rsync
+rsync -av --dry-run --delete -e ssh /home/nduytg/source/ \
+  root@192.168.31.131:/root/backup
+```
 
-## Restart Crond
-service crond restart
+Generate SSH keys and copy the public key to the remote host to avoid
+interactive password prompts when cron executes the job.
+
+## Schedule the synchronization
+
+```bash
+sudo crontab -e
+```
+
+Example entry (run every two minutes during testing):
+
+```cron
+*/2 * * * * rsync -av --delete -e ssh /home/nduytg/source/ \
+  root@192.168.31.131:/root/backup > /dev/null 2>&1
+```
+
+Restart the cron daemon after editing the schedule.
+
+```bash
+sudo systemctl restart crond
+```

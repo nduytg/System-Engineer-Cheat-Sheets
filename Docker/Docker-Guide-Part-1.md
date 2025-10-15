@@ -1,73 +1,65 @@
-# Docker Guide - Part 1: Install Docker
+# Docker Guide Part 1: Install Docker Engine
 
 - **Author:** nduytg
 - **Version:** 1.0
-- **Date:** 2/1/18
+- **Date:** 2018-01-02
 - **Tested on:** CentOS 7
 
-## Reference
-https://docs.docker.com/engine/installation/linux/docker-ce/centos/
-https://docs.docker.com/get-started/
+This section follows the official Docker Engine installation steps for CentOS 7.
 
-#### Docker requirements
-## Kernel version 3.10 or higher (CentOS7, Ubuntu 16,...)
-## 64-bit OS
+## Requirements
 
-###### Remove old version of docker
-yum remove docker docker-common docker-selinux docker-engine
+- 64-bit operating system
+- Linux kernel 3.10 or later
 
-## Remove all old images, containers and volumes
-rm -rf /var/lib/docker
+Reference documentation:
 
-###### Set up Docker Repository
-## Install prerequisite packages
-yum install -y yum-utils device-mapper-persistent-data lvm2
+- <https://docs.docker.com/engine/install/centos/>
+- <https://docs.docker.com/get-started/>
 
-## Enable "stable" docker
-yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+## Remove legacy versions
 
-## Enable the "edge" and "test" repo for experiment
-yum-config-manager --enable docker-ce-edge
-yum-config-manager --enable docker-ce-test
+```bash
+sudo yum remove docker docker-common docker-selinux docker-engine
+sudo rm -rf /var/lib/docker
+```
 
-###### Install Docker
-yum install docker-ce
+## Configure the Docker repository
 
-## Start Docker
-systemctl start docker
-systemctl enable docker
+Install prerequisites and enable the stable repository. Uncomment the final two
+commands if you wish to opt in to the edge or test channels.
 
-## Check Docker version
-[root@centos-docker ~]# docker --version
-Docker version 17.12.0-ce, build c97c6d6
+```bash
+sudo yum install -y yum-utils device-mapper-persistent-data lvm2
+sudo yum-config-manager --add-repo \
+  https://download.docker.com/linux/centos/docker-ce.repo
+# sudo yum-config-manager --enable docker-ce-edge
+# sudo yum-config-manager --enable docker-ce-test
+```
 
-## Run hello-world image on Docker
+## Install and start Docker
+
+```bash
+sudo yum install -y docker-ce
+sudo systemctl enable --now docker
+```
+
+## Verify the installation
+
+```bash
+docker --version
 docker run hello-world
-
-## List local images
 docker images
-
-## Searching images (on default registry)
 docker search centos
-## Pull specific images
 docker pull centos:centos6
 docker pull centos
-docker images
-
-docker run [name|image-id]
-
-## Inspect local images
 docker inspect centos
 docker inspect hello-world
-
-## List running containers
 docker ps
-
-## List all containers
 docker ps -a
-
-run docker interactive, terminal
 docker run -it centos:latest
+docker run -d centos:latest
+```
 
-run docker as deamon
-docker run -d centos:lastest
+Use `docker run IMAGE` (with either the image name or ID) to start additional
+containers as required.

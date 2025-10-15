@@ -1,5 +1,6 @@
-# before result
+# SSH Audit Report (Before Hardening)
 
+```text
 [0;36m# general[0m
 [0;32m(gen) banner: SSH-2.0-OpenSSH_7.4[0m
 [0;32m(gen) software: OpenSSH 7.4[0m
@@ -117,3 +118,6 @@
 [0;33m(rec) -hmac-sha1                            -- mac algorithm to remove [0m
 [0;33m(rec) -hmac-sha1-etm@openssh.com            -- mac algorithm to remove [0m
 [0;33m(rec) -umac-64-etm@openssh.com              -- mac algorithm to remove [0m
+
+
+```

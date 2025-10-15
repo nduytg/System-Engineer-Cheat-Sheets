@@ -1,5 +1,6 @@
-# after result
+# SSH Audit Report (After Hardening)
 
+```text
 [0;36m# general[0m
 [0;32m(gen) banner: SSH-2.0-OpenSSH_7.4[0m
 [0;32m(gen) software: OpenSSH 7.4[0m
@@ -61,3 +62,6 @@
 [0;32m(rec) +hmac-sha2-256-etm@openssh.com        -- mac algorithm to append [0m
 [0;32m(rec) +hmac-sha2-512-etm@openssh.com        -- mac algorithm to append [0m
 [0;32m(rec) +umac-128-etm@openssh.com             -- mac algorithm to append [0m
+
+
+```

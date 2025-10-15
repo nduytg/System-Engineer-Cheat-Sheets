@@ -1,78 +1,80 @@
-# Docker Guide - Part 4: Swarm
+# Docker Guide Part 4: Swarm
 
 - **Author:** nduytg
 - **Version:** 1.0
-- **Date:** 3/1/18
+- **Date:** 2018-01-03
 - **Tested on:** CentOS 7
 
-## Reference
-https://docs.docker.com/engine/installation/linux/docker-ce/centos/
-https://docs.docker.com/get-started/
-https://docs.docker.com/machine/install-machine/
-https://wiki.centos.org/HowTos/Virtualization/VirtualBox
+Use Docker Machine and VirtualBox to provision a two-node Swarm cluster, deploy a
+stack, and tear it down.
 
-###### Prerequisites
-#### Install Docker Machine
-curl -L https://github.com/docker/machine/releases/download/v0.13.0/docker-machine-`uname -s`-`uname -m` >/tmp/docker-machine && \
-chmod +x /tmp/docker-machine && cp /tmp/docker-machine /usr/local/bin/docker-machine
+## Prerequisites
 
+Install Docker Machine:
+
+```bash
+sudo curl -L \
+  https://github.com/docker/machine/releases/download/v0.13.0/docker-machine-"$(uname -s)"-"$(uname -m)" \
+  -o /usr/local/bin/docker-machine
+sudo chmod +x /usr/local/bin/docker-machine
 docker-machine version
+```
 
-#### Install VirtualBox
+Install VirtualBox and its dependencies:
+
+```bash
 cd /etc/yum.repos.d
-wget http://download.virtualbox.org/virtualbox/rpm/rhel/virtualbox.repo
-
-## Install DKMS (Dynamic Kernel Module) for VirtualBox
-yum --enablerepo=epel install dkms
-yum groupinstall "Development Tools"
-yum install kernel-devel
-
-## Install VirtualBox 5.2
-yum install VirtualBox-5.2.x86_64
-
-## Recompile kernel module
+sudo wget http://download.virtualbox.org/virtualbox/rpm/rhel/virtualbox.repo
+sudo yum --enablerepo=epel install -y dkms
+sudo yum groupinstall -y "Development Tools"
+sudo yum install -y kernel-devel
+sudo yum install -y VirtualBox-5.2
 sudo /sbin/vboxconfig
+```
 
-#### Set up your Swarm
-## Create a cluster
+## Provision the Swarm
+
+```bash
 docker-machine create --driver virtualbox myvm1
 docker-machine create --driver virtualbox myvm2
+```
 
-## Initialize the swarm and add nodes
+Initialize the cluster from the first node:
+
+```bash
 docker-machine ssh myvm1 "docker swarm init --advertise-addr <myvm1 ip>"
+```
 
-Swarm initialized: current node (fon41sug27y9mwn3asfqo3ork) is now a manager.
-To add a worker to this swarm, run the following command:
+Join the worker:
 
-docker swarm join --token SWMTKN-1-5c0ya8i59hs18zvc30z7ssnbsr3vq709edg7loc2rydia3oksf-8wu15o42wti2k1pcafk86vdvm 192.168.99.100:2377
+```bash
+docker-machine ssh myvm2 "docker swarm join --token <worker-token> <manager-ip>:2377"
+```
 
-To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.
+List cluster members:
 
-## Join the swarm
-docker-machine ssh myvm2 "docker swarm join --token SWMTKN-1-5c0ya8i59hs18zvc30z7ssnbsr3vq709edg7loc2rydia3oksf-8wu15o42wti2k1pcafk86vdvm 192.168.99.100:2377"
-
-## List the nodes in the swarm
+```bash
 docker-machine ssh myvm1 "docker node ls"
+```
 
-## Deploy app on the swarm cluster
-docker-machine ssh myvm1 "docker node ls"
+## Deploy a stack
 
-## Configure a docker-machine shell to the swarm manager
+Configure your shell to talk to the manager and launch the stack described in
+`docker-compose.yml` from Part 3.
+
+```bash
 docker-machine env myvm1
-eval $(docker-machine env myvm1)
-
+eval "$(docker-machine env myvm1)"
 docker stack deploy -c docker-compose.yml getstartedlab
-
-## Test app
-for i in {1..5} ; do curl -4 http://<myvm_ip> ; done
-
-## Remove the stack
+for i in {1..5}; do curl -4 http://<myvm_ip>; done
 docker stack rm getstartedlab
+eval "$(docker-machine env -u)"
+```
 
-## Unsetting docker-machine shell
-eval $(docker-machine env -u)
+## Manage machines
 
-## Stop/Start docker machines
+```bash
 docker-machine ls
-
-docker-machine start/stop <machine-name>
+docker-machine stop <machine-name>
+docker-machine start <machine-name>
+```

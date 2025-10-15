@@ -1,30 +1,28 @@
-# Docker Guide - Part 4: Stacks
+# Docker Guide Part 5: Stacks
 
 - **Author:** nduytg
 - **Version:** 1.0
-- **Date:** 4/1/18
+- **Date:** 2018-01-04
 - **Tested on:** CentOS 7
 
-## Reference
-https://docs.docker.com/engine/installation/linux/docker-ce/centos/
-https://docs.docker.com/get-started/
-https://docs.docker.com/machine/install-machine/
+Extend the Swarm deployment by adding a visualizer service and persistent Redis
+backend to the stack.
 
+## Start the Swarm
 
-###### Boot up your swarm
+```bash
 docker-machine ls
 docker-machine start myvm1
 docker-machine start myvm2
-
 docker-machine ssh myvm1 "docker node ls"
+```
 
-###### Edit docker-compose.yml
-vi docker-compose.yml
-**Content**
+## Compose file with visualizer
+
+```yaml
 version: "3"
 services:
   web:
-    replace username/repo:tag with your name and image details
     image: nduytg/get-started:part2
     deploy:
       replicas: 5
@@ -43,7 +41,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
+      - /var/run/docker.sock:/var/run/docker.sock
     deploy:
       placement:
         constraints: [node.role == manager]
@@ -51,50 +49,24 @@ services:
       - webnet
 networks:
   webnet:
+```
 
+## Deploy the stack
 
-## Configure a docker-machine shell to the swarm manager
+```bash
 docker-machine env myvm1
-eval $(docker-machine env myvm1)
-
-## Deploy your stack
+eval "$(docker-machine env myvm1)"
 docker stack deploy -c docker-compose.yml getstartedlab
-
-## Go to http://<your_ip>:8080
-## Or
 docker stack ps getstartedlab
+```
 
-###### Update docker-compose.yml with Redis (storing app data)
-vi docker-compose.yml
-**Content**
-version: "3"
-services:
-  web:
-    replace username/repo:tag with your name and image details
-    image: nduytg/get-started:part2
-    deploy:
-      replicas: 5
-      restart_policy:
-        condition: on-failure
-      resources:
-        limits:
-          cpus: "0.1"
-          memory: 50M
-    ports:
-      - "80:80"
-    networks:
-      - webnet
-  visualizer:
-    image: dockersamples/visualizer:stable
-    ports:
-      - "8080:8080"
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
-    deploy:
-      placement:
-        constraints: [node.role == manager]
-    networks:
-      - webnet
+Access the visualizer at `http://<manager-ip>:8080`.
+
+## Add Redis for persistent state
+
+Update `docker-compose.yml` to include Redis:
+
+```yaml
   redis:
     image: redis
     ports:
@@ -107,15 +79,15 @@ services:
     command: redis-server --appendonly yes
     networks:
       - webnet
-networks:
-  webnet:
+```
 
+Create the data directory on the manager and redeploy.
 
-Create a ./data directory on the manager:
-docker-machine ssh myvm1 "mkdir ./data"
-
+```bash
+docker-machine ssh myvm1 "mkdir -p /home/docker/data"
 docker stack deploy -c docker-compose.yml getstartedlab
-
 docker service ls
+```
 
-## Goto http://<your_ip>
+Visit `http://<manager-ip>` to validate the front-end and confirm Redis persists
+state between restarts.

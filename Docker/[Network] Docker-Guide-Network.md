@@ -1,67 +1,66 @@
-# Docker Guide - Network
+# Docker Guide: Networking
 
 - **Author:** nduytg
 - **Version:** 1.0
-- **Date:** 9/1/18
+- **Date:** 2018-01-09
 - **Tested on:** CentOS 7
 
-## Reference
-https://docs.docker.com/engine/userguide/networking/
+Explore Docker networking fundamentals including default bridges, user-defined
+networks, port publishing, and static IP assignments.
 
+## Inspect existing networks
 
-## List current network
+```bash
 docker network ls
-
 ip addr show
+```
 
-###### The default bridge network
-#### Examine the bridge network
+## Default bridge network
+
+Inspect the default bridge and run two containers that share it.
+
+```bash
 docker network inspect bridge
-
-#### Start 2 busybox container connected to the default bridge network
-docker run -itd --name=container1 busybox
-
-docker run -itd --name=container2 busybox
-
-## Examine how network looks from inside the container
+docker run -itd --name container1 busybox
+docker run -itd --name container2 busybox
 docker attach container1
 ip -4 addr
+exit
+```
 
+## User-defined bridge network
 
-###### User-defined networks
-#### Bridge Network
-## Create your own bridge network
-docker network ls
+```bash
 docker network create --driver bridge my_bridge_net
-
-docker network ls
-
-docker run --network=my_bridge_net -itd --name=container3 busybox
-
+docker run --network my_bridge_net -itd --name container3 busybox
 docker network inspect my_bridge_net
+```
 
-###### Exposing and publishing ports
-## Publish port 80 on nginx container to a random high port (higher than 30000)
-docker run -it -d -p 80 nginx
+## Publish container ports
+
+```bash
+docker run -d -p 80 nginx        # random host port
 docker ps
-
-## Publish port 80 on nginx container to port 8080 on host machine
-docker run -it -d -p 8080:80 nginx
+docker run -d -p 8080:80 nginx   # explicit host port
 docker ps
+```
 
-###### Set static ip for container
-#### Option 1: From Docker CLI
-docker network create --subnet=172.20.0.0/16 mynet123
-docker run --net mynet123 --ip 172.20.0.99 -p 8080:80 --hostname <container_hostname> -it -d nginx
+## Assign static IP addresses
 
+### Docker CLI
+
+```bash
+docker network create --subnet 172.20.0.0/16 mynet123
+docker run --net mynet123 --ip 172.20.0.99 -p 8080:80 \
+  --hostname <container_hostname> -d nginx
 curl 172.20.0.99:80
-or
 curl localhost:8080
+```
 
-#### Option 2: In docker-compose.yml
-vi docker-compose.yml
-**Content**
-version: '3'
+### Docker Compose
+
+```yaml
+version: "3"
 services:
   nginx:
     image: nginx
@@ -71,14 +70,15 @@ services:
         ipv4_address: 192.168.0.99
 networks:
   mynet123:
-   driver: bridge
-   ipam:
-    config:
-    - subnet: 192.168.0.0/24
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.0.0/24
+```
 
-
-
+```bash
 docker-compose up -d
 docker ps
 docker network ls
 curl 192.168.0.99
+```
