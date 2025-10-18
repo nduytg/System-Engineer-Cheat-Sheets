@@ -1,0 +1,12 @@
+{
+  "plugins": {
+    "md013": {
+      "enabled": false
+    },
+    "md033": {
+      "allowed_elements": [
+        "br"
+      ]
+    }
+  }
+}
