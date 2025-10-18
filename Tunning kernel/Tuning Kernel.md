@@ -1,9 +1,9 @@
 # Linux Kernel Tuning Essentials
 
-- **Author:** System Engineer Collective
+- **Author:** nduytg@gmail.com
 - **Version:** 2.0
-- **Date:** 2024-05-01
-- **Tested on:** Arch Linux, Debian 12, Ubuntu 22.04
+- **Date:** 2025-10-18
+- **Tested on:** Debian 12, Ubuntu 22.04
 
 These notes summarize the day-to-day kernel tuning tasks you will meet on most
 Linux servers. They focus on practical inspection commands, temporary tweaks,
