@@ -1,109 +1,204 @@
-# Linux Kernel Tuning Cheat Sheet
+# Linux Kernel Tuning Essentials
 
-- **Author:** nduytg
-- **Version:** 1.2
-- **Date:** 2017-11-09
-- **Tested on:** CentOS 7
+- **Author:** nduytg@gmail.com
+- **Version:** 2.0
+- **Date:** 2025-10-18
+- **Tested on:** Debian 12, Ubuntu 22.04
 
-Tune networking, filesystem, and security parameters via `/etc/sysctl.conf`.
+These notes summarize the day-to-day kernel tuning tasks you will meet on most
+Linux servers. They focus on practical inspection commands, temporary tweaks,
+and the persistent configuration you need so the changes survive a reboot.
 
-## Preparation
+## Inspecting and applying kernel parameters
+
+### Discover current settings
+
+Use `sysctl` to list or query runtime kernel parameters. Pipe the full list
+through `less` or `rg` when you are hunting for a specific key.
 
 ```bash
-sysctl -a
-sudo cp /etc/sysctl.conf /etc/sysctl_backup.conf
-sudo vi /etc/sysctl.conf
+sudo sysctl -a | less
+sudo sysctl net.core.somaxconn
+cat /proc/sys/net/ipv4/tcp_fin_timeout
 ```
 
-## Networking
+For quick auditing, combine `sysctl --values` with command substitution so you
+only print the numeric results.
 
-```conf
-# Congestion control
-net.ipv4.tcp_congestion_control = htcp
-net.ipv4.tcp_timestamps = 1
-net.ipv4.tcp_window_scaling = 1
-net.ipv4.tcp_sack = 1
-
-# Socket buffers
-net.ipv4.tcp_rmem = 8192 87380 16777216
-net.ipv4.udp_rmem_min = 16384
-net.core.rmem_default = 262144
-net.core.rmem_max = 16777216
-net.ipv4.tcp_wmem = 8192 65536 16777216
-net.ipv4.udp_wmem_min = 16384
-net.core.wmem_default = 262144
-net.core.wmem_max = 16777216
-net.core.somaxconn = 16384
-net.core.netdev_max_backlog = 16384
-net.core.dev_weight = 64
-
-# Connection tracking
-net.nf_conntrack_max = 100000
-net.netfilter.nf_conntrack_tcp_timeout_established = 600
-
-# Security hardening
-net.ipv4.tcp_syncookies = 1
-net.ipv4.tcp_max_syn_backlog = 262144
-net.ipv4.tcp_syn_retries = 2
-net.ipv4.tcp_synack_retries = 2
-net.ipv4.ip_forward = 0
-net.ipv4.conf.all.forwarding = 0
-net.ipv4.conf.default.forwarding = 0
-net.ipv6.conf.all.forwarding = 0
-net.ipv6.conf.default.forwarding = 0
-net.ipv4.conf.all.accept_source_route = 0
-net.ipv4.conf.default.accept_source_route = 0
-net.ipv6.conf.all.accept_source_route = 0
-net.ipv6.conf.default.accept_source_route = 0
-net.ipv4.conf.all.accept_redirects = 0
-net.ipv4.conf.default.accept_redirects = 0
-net.ipv4.conf.all.send_redirects = 0
-net.ipv4.conf.default.send_redirects = 0
-net.ipv4.conf.all.rp_filter = 1
-net.ipv4.conf.default.rp_filter = 1
-net.ipv4.conf.all.log_martians = 1
-net.ipv4.conf.default.log_martians = 1
-
-# Connection lifecycle
-net.ipv4.tcp_fin_timeout = 7
-net.ipv4.tcp_keepalive_time = 300
-net.ipv4.tcp_keepalive_probes = 5
-net.ipv4.tcp_keepalive_intvl = 15
-
-# ICMP
-net.ipv4.icmp_echo_ignore_all = 0
-net.ipv4.icmp_echo_ignore_broadcasts = 1
-net.ipv4.icmp_ignore_bogus_error_responses = 1
-
-# Misc networking
-net.ipv4.conf.all.proxy_arp = 0
-net.ipv4.ip_local_port_range = 16384 65535
-net.ipv4.tcp_rfc1337 = 1
+```bash
+sudo sysctl --values net.ipv4.ip_local_port_range
 ```
 
-## Filesystem and memory
+### Apply runtime changes
 
-```conf
-fs.file-max = 300000
+`sysctl -w` (or the longer `sysctl key=value` form) updates a kernel value
+immediately until the next reboot.
+
+```bash
+sudo sysctl -w net.core.somaxconn=32768
+sudo sysctl vm.dirty_ratio=10
+```
+
+Alternatively, write straight to the `/proc/sys` interface when you are working
+inside automation that already has root privileges.
+
+```bash
+echo 1 | sudo tee /proc/sys/net/ipv4/tcp_timestamps
+```
+
+### Make changes persistent
+
+Drop-in configuration files keep your tuning reproducible. Create a descriptive
+file under `/etc/sysctl.d/` and reapply all settings with `sysctl --system`.
+
+```bash
+sudo tee /etc/sysctl.d/99-performance.conf <<'CONF'
+net.core.somaxconn = 32768
 vm.swappiness = 10
-vm.dirty_background_ratio = 5
-vm.dirty_ratio = 10
-vm.overcommit_memory = 0
-vm.overcommit_ratio = 50
+CONF
+
+sudo sysctl --system
 ```
 
-## Kernel hardening and IPv6
+Most distributions also read `/etc/sysctl.conf`. Use whichever location best
+fits your configuration management story, but keep related options grouped to
+simplify reviews.
 
-```conf
-kernel.randomize_va_space = 2
-net.ipv6.conf.all.autoconf = 0
-net.ipv6.conf.all.accept_ra = 0
-net.ipv6.conf.default.autoconf = 0
-net.ipv6.conf.default.accept_ra = 0
-```
+## User, process, and kernel limits
 
-## Apply changes
+Per-process limits (for example, the number of open files) and global kernel
+limits complement each other:
+
+* **Soft limit** – The active ceiling enforced for a shell or process. Users
+  can raise it up to the matching hard limit.
+* **Hard limit** – The maximum a non-root user can request. Only root or
+  privileged services can expand this boundary.
+* **Kernel-wide limit** – A system ceiling that applies regardless of process
+  ownership. For file descriptors this is `fs.file-max`.
+
+Inspect the current state with the shell built-ins or by reading the process
+metadata directly.
 
 ```bash
-sudo sysctl -p
+ulimit -a
+ulimit -Sn
+ulimit -Hn
+cat /proc/"$PID"/limits
 ```
+
+Use `prlimit` when you need to review or adjust limits for a running service
+without restarting it.
+
+```bash
+sudo prlimit --pid "$PID"
+sudo prlimit --pid "$PID" --nofile=65535:65535
+```
+
+Persist per-user limits in `/etc/security/limits.d/*.conf` (or the legacy
+`/etc/security/limits.conf`). Make sure PAM sessions load `pam_limits.so`—it is
+enabled by default on modern distributions and through SSH when `UsePAM yes` is
+set in `sshd_config`.
+
+```conf
+@nginx   soft  nofile  65535
+@nginx   hard  nofile  65535
+```
+
+Match those values with a kernel-wide ceiling via `sysctl`.
+
+```bash
+sudo sysctl -w fs.file-max=200000
+```
+
+More detail on per-process configuration is provided in
+[`process-and-file-limits.md`](./process-and-file-limits.md).
+
+## I/O scheduler selection
+
+Rotational disks and solid-state media benefit from different schedulers. Query
+all block devices and their current policy with `lsblk`.
+
+```bash
+lsblk -d -o NAME,ROTA,SCHED
+```
+
+* **SSD/NVMe** – Choose `none` (previously called `noop`) or `mq-deadline` to
+  minimize latency.
+* **SATA SSDs on legacy kernels** – `deadline` strikes a balance between
+  throughput and fairness.
+* **Spinning disks** – `bfq` and `kyber` (where available) focus on consistent
+  throughput for sequential workloads.
+
+Switch schedulers at runtime by writing to the queue attribute.
+
+```bash
+echo mq-deadline | sudo tee /sys/block/sda/queue/scheduler
+echo none | sudo tee /sys/block/nvme0n1/queue/scheduler
+```
+
+Persist the choice with a udev rule so it reapplies when the device comes back
+online.
+
+```bash
+sudo tee /etc/udev/rules.d/60-io-scheduler.rules <<'RULE'
+ACTION=="add|change", KERNEL=="nvme[0-9]n[0-9]", ATTR{queue/scheduler}="none"
+RULE
+
+sudo udevadm control --reload
+```
+
+On systems that boot via GRUB, you can also append `scsi_mod.use_blk_mq=1` or a
+specific `elevator=` option to the kernel command line for legacy drivers.
+
+## Swap and virtual memory
+
+Start by reviewing the active swap devices and virtual memory policy.
+
+```bash
+swapon --show
+free -h
+sysctl vm.swappiness vm.vfs_cache_pressure
+```
+
+Tune swap behavior with the `vm.swappiness`, `vm.min_free_kbytes`, and dirty
+page ratios. Lower swappiness (for example 10) keeps the working set in RAM for
+latency-sensitive applications; higher values (60–100) favor offloading idle
+pages on memory-constrained hosts.
+
+```bash
+sudo sysctl -w vm.swappiness=10
+sudo sysctl -w vm.dirty_background_ratio=5
+sudo sysctl -w vm.dirty_ratio=15
+```
+
+Store long-term settings in the same `/etc/sysctl.d/` file you use for other
+kernel tunables so they survive reboots.
+
+```bash
+sudo tee /etc/sysctl.d/99-memory.conf <<'CONF'
+vm.swappiness = 10
+vm.vfs_cache_pressure = 75
+CONF
+```
+
+### When to disable swap
+
+Disabling swap altogether can help real-time trading systems, performance test
+beds, or high-throughput databases that suffer when the kernel reclaims pages.
+You still need enough physical RAM to absorb spikes. Turn swap off temporarily
+and comment the entry in `/etc/fstab` to make the change permanent.
+
+```bash
+sudo swapoff -a
+sudo sed -i 's/^\/\(\S\+\s\+\S\+\s\+swap\s\)/#\1/' /etc/fstab
+```
+
+Consider using a small zram device instead of traditional swap on laptops and
+micro instances. It gives you headroom while keeping I/O on fast compressed
+memory.
+
+## Further reading
+
+* [Arch Linux – Improving performance](https://wiki.archlinux.org/title/Improving_performance)
+* Distribution tuning guides (RHEL Performance Tuning, SUSE Performance Guide)
+* Hardware vendor documentation for NVMe and RAID controllers
