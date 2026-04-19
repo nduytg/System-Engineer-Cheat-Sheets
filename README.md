@@ -15,6 +15,17 @@ The repository now follows a GitHub Pages-friendly Jekyll model:
 
 Legacy topic folders remain in place during the transition and can be gradually moved or aliased into `_docs/`.
 
+## Jekyll content model
+
+The repository now follows a GitHub Pages-friendly Jekyll model:
+
+- `_docs/` for evergreen cheat sheets.
+- `_posts/` for dated blog entries.
+- `_projects/` for platform engineering case studies.
+- `index.md` as the homepage with clear paths to Cheat Sheets and Blog.
+
+Legacy topic folders remain in place during the transition and can be gradually moved or aliased into `_docs/`.
+
 Cheat sheets are organized by topic. Each directory contains one or more
 `*.md` files.
 
