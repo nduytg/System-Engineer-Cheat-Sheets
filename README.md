@@ -4,6 +4,8 @@ This repository curates practical, task-oriented guides for junior system
 engineers. All content now lives in Markdown with consistent metadata, headings,
 and fenced code blocks to improve readability and collaboration.
 
+## Repository layout
+
 ## Jekyll content model
 
 The repository now follows a GitHub Pages-friendly Jekyll model:

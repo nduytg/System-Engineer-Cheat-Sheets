@@ -6,6 +6,4 @@ tags: [about, metadata]
 categories: [site]
 ---
 
-## About this site
-
 This site documents practical system engineering operations, from evergreen cheat sheets to platform project case studies and time-based blog notes.

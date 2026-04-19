@@ -6,8 +6,6 @@ tags: [projects, case-studies]
 categories: [navigation]
 ---
 
-## Case studies
-
 {% assign sorted_projects = site.projects | sort: 'title' %}
 {% for project in sorted_projects %}
 
