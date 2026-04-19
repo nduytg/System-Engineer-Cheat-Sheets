@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: 'en-US' }}">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% seo %}
+    <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+    <style>
+      .top-nav { margin: 1rem 0 2rem; }
+      .top-nav ul { display: flex; flex-wrap: wrap; gap: 0.8rem; list-style: none; padding: 0; margin: 0; }
+      .top-nav a { font-weight: 700; text-decoration: none; }
+      .entry-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+      .entry-card { border: 1px solid #ddd; border-radius: 8px; padding: 1rem; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1><a href="{{ '/' | relative_url }}">{{ site.title }}</a></h1>
+      <p>{{ site.description }}</p>
+      <nav class="top-nav" aria-label="Top navigation">
+        <ul>
+          {% for item in site.data.navigation %}
+          <li><a href="{{ item.url | relative_url }}">{{ item.title }}</a></li>
+          {% endfor %}
+        </ul>
+      </nav>
+    </header>
+
+    <main id="content" role="main">
+      {{ content }}
+    </main>
+  </body>
+</html>

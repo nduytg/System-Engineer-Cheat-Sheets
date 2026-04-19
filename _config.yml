@@ -1,1 +1,28 @@
+title: System Engineer Cheat Sheets
+description: Practical cheat sheets, platform engineering projects, and blog updates.
 theme: jekyll-theme-architect
+
+collections:
+  docs:
+    output: true
+    permalink: /cheat-sheets/:name/
+  projects:
+    output: true
+    permalink: /projects/:name/
+
+defaults:
+  - scope:
+      path: ""
+      type: docs
+    values:
+      layout: default
+  - scope:
+      path: ""
+      type: projects
+    values:
+      layout: default
+  - scope:
+      path: ""
+      type: posts
+    values:
+      layout: default
