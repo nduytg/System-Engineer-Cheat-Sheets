@@ -2,11 +2,8 @@
 layout: default
 title: About
 permalink: /about/
-tags:
-  - about
-  - metadata
-categories:
-  - site
+tags: [about, metadata]
+categories: [site]
 ---
 
 # About

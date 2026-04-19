@@ -2,11 +2,8 @@
 layout: default
 title: Blog
 permalink: /blog/
-tags:
-  - blog
-  - posts
-categories:
-  - navigation
+tags: [blog, posts]
+categories: [navigation]
 ---
 
 # Blog

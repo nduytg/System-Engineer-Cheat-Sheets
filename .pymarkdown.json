@@ -7,6 +7,9 @@
       "allowed_elements": [
         "br"
       ]
+    },
+    "md041": {
+      "enabled": false
     }
   }
 }

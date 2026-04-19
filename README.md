@@ -6,7 +6,6 @@ and fenced code blocks to improve readability and collaboration.
 
 ## Repository layout
 
-
 ## Jekyll content model
 
 The repository now follows a GitHub Pages-friendly Jekyll model:
@@ -56,15 +55,12 @@ Install the linter with `pip install pymarkdownlnt` or via `pre-commit`'s
 managed environments. Running the checks keeps the cheat sheets consistently
 formatted and ready for publishing.
 
-
-
 ## CI/CD
 
 GitHub Actions now uses two workflows:
 
 - `Markdown lint` (`.github/workflows/markdown-lint.yml`) for Markdown quality checks on pushes and pull requests.
 - `Build and Deploy GitHub Pages` (`.github/workflows/pages-deploy.yml`) to build the Jekyll site on pull requests and deploy to GitHub Pages on pushes to `main`.
-
 
 ## GitHub Pages domain
 

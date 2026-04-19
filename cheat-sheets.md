@@ -2,11 +2,8 @@
 layout: default
 title: Cheat Sheets
 permalink: /cheat-sheets/
-tags:
-  - docs
-  - cheat-sheets
-categories:
-  - navigation
+tags: [docs, cheat-sheets]
+categories: [navigation]
 ---
 
 # Cheat Sheets

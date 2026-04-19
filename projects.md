@@ -2,11 +2,8 @@
 layout: default
 title: Projects
 permalink: /projects/
-tags:
-  - projects
-  - case-studies
-categories:
-  - navigation
+tags: [projects, case-studies]
+categories: [navigation]
 ---
 
 # Platform Engineering Projects
