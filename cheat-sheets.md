@@ -6,8 +6,6 @@ tags: [docs, cheat-sheets]
 categories: [navigation]
 ---
 
-# Cheat Sheets
-
 These pages come from the `_docs/` collection and are intended to be evergreen references.
 
 {% assign sorted_docs = site.docs | sort: 'title' %}
