@@ -12,7 +12,9 @@ These pages come from the `_docs/` collection and are intended to be evergreen r
 
 {% assign sorted_docs = site.docs | sort: 'title' %}
 {% for doc in sorted_docs %}
+
 - [{{ doc.title }}]({{ doc.url | relative_url }})
+
 {% endfor %}
 
 ## Legacy topic folders
