@@ -7,6 +7,14 @@
       "allowed_elements": [
         "br"
       ]
+    },
+    "md041": {
+      "enabled": false
+    }
+  },
+  "extensions": {
+    "front-matter": {
+      "enabled": true
     }
   }
 }
