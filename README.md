@@ -6,10 +6,7 @@ and fenced code blocks to improve readability and collaboration.
 
 ## Repository layout
 
-## Jekyll content model
-
-The repository now follows a GitHub Pages-friendly Jekyll model:
-
+The repository now follows a GitHub Pages-friendly Jekyll content model:
 - `_docs/` for evergreen cheat sheets.
 - `_posts/` for dated blog entries.
 - `_projects/` for platform engineering case studies.
