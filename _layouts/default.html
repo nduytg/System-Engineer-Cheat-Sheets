@@ -14,7 +14,7 @@
   </head>
   <body>
     <header>
-      <h1><a href="{{ '/' | relative_url }}">{{ site.title }}</a></h1>
+      <p><a href="{{ '/' | relative_url }}">{{ site.title }}</a></p>
       <p>{{ site.description }}</p>
       <nav class="top-nav" aria-label="Top navigation">
         <ul>
@@ -26,6 +26,7 @@
     </header>
 
     <main id="content" role="main">
+      <h1>{{ page.title | default: site.title }}</h1>
       {{ content }}
     </main>
   </body>
